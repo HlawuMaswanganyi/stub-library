@@ -1,166 +1,163 @@
-(function (global) {
-  const stubAfrica = function ({ tableElementId, fileInputElementId, createFile }) {
-    if (!fileInputElementId) {
-      this.errors.push('Sorry, kindly provide a selector for your file upload input field: e.g #my-stub--file-upload');
-      return false;
-    }
+const stubAfrica = function ({ tableElementId, fileInputElementId, createFile }) {
+  if (!fileInputElementId) {
+    this.errors.push('Sorry, kindly provide a selector for your file upload input field: e.g #my-stub--file-upload');
+    return false;
+  }
 
-    if (!fileInputElementId) {
-      this.errors.push('Sorry, kindly provide a selector for your table element: e.g #my-stub--table');
-      return false;
-    }
-    this.createFile = createFile;
-    this.tableId = tableElementId;
-    this.fileInputId = fileInputElementId;
+  if (!fileInputElementId) {
+    this.errors.push('Sorry, kindly provide a selector for your table element: e.g #my-stub--table');
+    return false;
+  }
+  this.createFile = createFile;
+  this.tableId = tableElementId;
+  this.fileInputId = fileInputElementId;
 
+  this.errors = [];
+  this.csvResults = null;
+
+  this.init();
+};
+
+stubAfrica.prototype = {
+  init: function () {
+    console.log("stub's running babe, go on!");
+    return true;
+  },
+  reset: function () {
     this.errors = [];
-    this.csvResults = null;
-
     this.init();
-  };
+  },
+  fileTypeChecker: function (file) {
+    const isCSVFileType = file && file.type === 'text/csv';
+    if (!isCSVFileType) {
+      this.errors.push(`Sorry, we failed to process your file (${file.type}). Kindly ensure to upload a csv type file`);
+      return false;
+    }
+    return true;
+  },
+  parseCSVContentAndReturnRows: function (csvContent) {
+    const lines = csvContent.split('\n');
+    const result = [];
+    lines.forEach((line) => {
+      const cells = line.split(',');
+      result.push(cells);
+    });
 
-  stubAfrica.prototype = {
-    init: function () {
-      console.log("stub's running babe, go on!");
-      return true;
-    },
-    reset: function () {
-      this.errors = [];
-      this.init();
-    },
-    fileTypeChecker: function (file) {
-      const isCSVFileType = file && file.type === 'text/csv';
-      if (!isCSVFileType) {
-        this.errors.push(
-          `Sorry, we failed to process your file (${file.type}). Kindly ensure to upload a csv type file`
-        );
-        return false;
-      }
-      return true;
-    },
-    parseCSVContentAndReturnRows: function (csvContent) {
-      const lines = csvContent.split('\n');
-      const result = [];
-      lines.forEach((line) => {
-        const cells = line.split(',');
-        result.push(cells);
-      });
+    return result;
+  },
+  fileProcessor: function () {
+    const readFile = async function (file) {
+      var reader = new FileReader();
+      await reader.readAsText(file);
 
-      return result;
-    },
-    fileProcessor: function () {
-      const readFile = async function (file) {
-        var reader = new FileReader();
-        await reader.readAsText(file);
+      const readSuccess = function (event) {
+        this.csvResults = this.parseCSVContentAndReturnRows(event.target.result);
 
-        const readSuccess = function (event) {
-          this.csvResults = this.parseCSVContentAndReturnRows(event.target.result);
+        if (this.createFile && this.createFile.type === 'csv') {
+          this.generateProfitLossStatementCSV();
+        }
 
-          if (this.createFile && this.createFile.type === 'csv') {
-            this.generateProfitLossStatementCSV();
-          }
-
-          this.statementGenerator();
-        }.bind(this);
-
-        reader.onload = readSuccess;
+        this.statementGenerator();
       }.bind(this);
 
-      document.getElementById(this.fileInputId).onchange = function (e) {
-        const csvFile = e.target.files[0];
+      reader.onload = readSuccess;
+    }.bind(this);
 
-        this.fileTypeChecker(csvFile);
+    document.getElementById(this.fileInputId).onchange = function (e) {
+      const csvFile = e.target.files[0];
 
-        readFile(e.srcElement.files[0]);
-      }.bind(this);
-    },
-    statementGenerator: function (statementType = 'PROFIT_LOSS', templateType = 'HTML_TABLE') {
-      switch (statementType) {
-        case 'PROFIT_LOSS':
-          return this.generateProfitLossStatement(templateType);
-        default:
-          return this.generateProfitLossStatement(templateType);
-      }
-    },
-    generateProfitLossStatement: function (templateType) {
-      switch (templateType) {
-        case 'HTML_TABLE':
-          return this.generateProfitLossStatementHTMLTable();
-        case 'PDF':
-          return this.generateProfitLossStatementPDF();
-        default:
-          return this.generateProfitLossStatementHTMLTable();
-      }
-    },
-    generateProfitLossStatementHTMLTable: function () {
-      const columnsLabels = this.csvResults[0];
-      const tableId = this.tableId;
-      const currentYearValue = new Date().getFullYear();
+      this.fileTypeChecker(csvFile);
 
-      try {
-        const populateTable = function (rows) {
-          const tableElement = document.getElementById(tableId);
+      readFile(e.srcElement.files[0]);
+    }.bind(this);
+  },
+  statementGenerator: function (statementType = 'PROFIT_LOSS', templateType = 'HTML_TABLE') {
+    switch (statementType) {
+      case 'PROFIT_LOSS':
+        return this.generateProfitLossStatement(templateType);
+      default:
+        return this.generateProfitLossStatement(templateType);
+    }
+  },
+  generateProfitLossStatement: function (templateType) {
+    switch (templateType) {
+      case 'HTML_TABLE':
+        return this.generateProfitLossStatementHTMLTable();
+      case 'PDF':
+        return this.generateProfitLossStatementPDF();
+      default:
+        return this.generateProfitLossStatementHTMLTable();
+    }
+  },
+  generateProfitLossStatementHTMLTable: function () {
+    const columnsLabels = this.csvResults[0];
+    const tableId = this.tableId;
+    const currentYearValue = new Date().getFullYear();
 
-          const tableBody = tableElement.getElementsByTagName('tbody')[0];
-          const tableHead = tableElement.getElementsByTagName('thead')[0];
+    try {
+      const populateTable = function (rows) {
+        const tableElement = document.getElementById(tableId);
 
-          tableHead.innerHTML = '';
-          tableBody.innerHTML = '';
+        const tableBody = tableElement.getElementsByTagName('tbody')[0];
+        const tableHead = tableElement.getElementsByTagName('thead')[0];
 
-          const tableHeadTr = document.createElement('tr');
-          tableHeadTr.innerHTML = `
+        tableHead.innerHTML = '';
+        tableBody.innerHTML = '';
+
+        const tableHeadTr = document.createElement('tr');
+        tableHeadTr.innerHTML = `
           <th>Current Year (${currentYearValue}) - values in ZAR </th>
           <th>Prior Year (${parseInt(currentYearValue) - 1}) - values in ZAR</th>`;
-          tableHead.appendChild(tableHeadTr);
+        tableHead.appendChild(tableHeadTr);
 
-          let specificYearData = {
-            [currentYearValue - 1]: {
-              expenses: [],
-              income: [],
-            },
-            [currentYearValue]: {
-              expenses: [],
-              income: [],
-            },
-          };
+        let specificYearData = {
+          [currentYearValue - 1]: {
+            expenses: [],
+            income: [],
+          },
+          [currentYearValue]: {
+            expenses: [],
+            income: [],
+          },
+        };
 
-          for (let i = 1; i < rows.length; i++) {
-            const row = rows[i];
+        for (let i = 1; i < rows.length; i++) {
+          const row = rows[i];
 
-            for (let j = 0; j < row.length; j++) {
-              if (j > 1) {
-                const expenseIncomeType = (columnsLabels[j] || 'unknown').replace(/[\r\n]+/g, '');
-                if (row[j] < 0) {
-                  specificYearData[row[1]].expenses.push({ label: expenseIncomeType, value: parseFloat(row[j]) });
-                } else {
-                  specificYearData[row[1]].income.push({ label: expenseIncomeType, value: parseFloat(row[j]) });
-                }
+          for (let j = 0; j < row.length; j++) {
+            if (j > 1) {
+              const expenseIncomeType = (columnsLabels[j] || 'unknown').replace(/[\r\n]+/g, '');
+              if (row[j] < 0) {
+                specificYearData[row[1]].expenses.push({ label: expenseIncomeType, value: parseFloat(row[j]) });
+              } else {
+                specificYearData[row[1]].income.push({ label: expenseIncomeType, value: parseFloat(row[j]) });
               }
             }
           }
+        }
 
-          const tableBodyTrIncome = document.createElement('tr');
-          const tableBodyTrExpense = document.createElement('tr');
+        const tableBodyTrIncome = document.createElement('tr');
+        const tableBodyTrExpense = document.createElement('tr');
 
-          Object.keys(specificYearData).map((yearKey) => {
-            const currentYearExpenses = specificYearData[yearKey].expenses;
-            const currentYearIncome = specificYearData[yearKey].income;
+        Object.keys(specificYearData).map((yearKey) => {
+          const currentYearExpenses = specificYearData[yearKey].expenses;
+          const currentYearIncome = specificYearData[yearKey].income;
 
-            const totalExpenses = currentYearExpenses.reduce(
-              (accumulator, currentValue) => accumulator + currentValue.value,
-              0
-            );
-            const totalIncome = currentYearIncome.reduce(
-              (accumulator, currentValue) => accumulator + currentValue.value,
-              0
-            );
+          const totalExpenses = currentYearExpenses.reduce(
+            (accumulator, currentValue) => accumulator + currentValue.value,
+            0
+          );
+          const totalIncome = currentYearIncome.reduce(
+            (accumulator, currentValue) => accumulator + currentValue.value,
+            0
+          );
 
-            let formattedAmount = new Intl.NumberFormat('en-ZA', {
-              style: 'currency',
-              currency: 'ZAR',
-            }).format(totalIncome - totalExpenses);
+          let formattedAmount = new Intl.NumberFormat('en-ZA', {
+            style: 'currency',
+            currency: 'ZAR',
+          }).format(totalIncome - totalExpenses);
 
-            tableBodyTrIncome.innerHTML += `
+          tableBodyTrIncome.innerHTML += `
           <td>
             <strong>Revenue items:</strong>
             ${currentYearIncome
@@ -176,7 +173,7 @@
           </td>
           `;
 
-            tableBodyTrExpense.innerHTML += `<td>
+          tableBodyTrExpense.innerHTML += `<td>
               <strong>Expense items</strong>
                ${currentYearExpenses
                  .map((expenseItem) => {
@@ -193,55 +190,52 @@
             </div>
           </td>
           `;
-          });
+        });
 
-          tableBody.appendChild(tableBodyTrIncome);
-          tableBody.appendChild(tableBodyTrExpense);
-        }.bind(this);
+        tableBody.appendChild(tableBodyTrIncome);
+        tableBody.appendChild(tableBodyTrExpense);
+      }.bind(this);
 
-        populateTable(this.csvResults);
-      } catch (e) {
-        this.errors.push(e.message);
-      }
-    },
-    generateProfitLossStatementPDF: function () {
-      return { pdfDownloadURL: 'https://stub.africa/business-name/statements/pdf/:id' };
-    },
-    generateProfitLossStatementCSV: function () {
-      const table = document.getElementById(this.tableId);
-      let csv = [];
+      populateTable(this.csvResults);
+    } catch (e) {
+      this.errors.push(e.message);
+    }
+  },
+  generateProfitLossStatementPDF: function () {
+    return { pdfDownloadURL: 'https://stub.africa/business-name/statements/pdf/:id' };
+  },
+  generateProfitLossStatementCSV: function () {
+    const table = document.getElementById(this.tableId);
+    let csv = [];
 
-      for (let row of table.rows) {
-        let rowData = [];
+    for (let row of table.rows) {
+      let rowData = [];
 
-        for (let cell of row.cells) {
-          rowData.push(cell.innerText);
-        }
-
-        csv.push(rowData.join(','));
+      for (let cell of row.cells) {
+        rowData.push(cell.innerText);
       }
 
-      const csvString = csv.join('\n');
+      csv.push(rowData.join(','));
+    }
 
-      const blob = new Blob([csvString], { type: 'text/csv;charset=utf-8;' });
+    const csvString = csv.join('\n');
 
-      if (this.createFile.autoDownload) {
-        const link = document.createElement('a');
+    const blob = new Blob([csvString], { type: 'text/csv;charset=utf-8;' });
 
-        const url = URL.createObjectURL(blob);
-        link.setAttribute('href', url);
+    if (this.createFile.autoDownload) {
+      const link = document.createElement('a');
 
-        link.setAttribute('download', `profit-loss-${new Date().getTime()}.csv`);
+      const url = URL.createObjectURL(blob);
+      link.setAttribute('href', url);
 
-        document.body.appendChild(link);
-        link.click();
+      link.setAttribute('download', `profit-loss-${new Date().getTime()}.csv`);
 
-        document.body.removeChild(link);
-        return true;
-      }
-      return { csvURL: 'https://stub.africa/business-name/statements/csv/:id' };
-    },
-  };
+      document.body.appendChild(link);
+      link.click();
 
-  global.stubAfrica = stubAfrica;
-})(window);
+      document.body.removeChild(link);
+      return true;
+    }
+    return { csvURL: 'https://stub.africa/business-name/statements/csv/:id' };
+  },
+};
