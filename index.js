@@ -1,5 +1,5 @@
 (function (global) {
-  const stubAfrica = function ({ tableElementId, fileInputElementId }) {
+  const stubAfrica = function ({ tableElementId, fileInputElementId, createFile }) {
     if (!fileInputElementId) {
       this.errors.push('Sorry, kindly provide a selector for your file upload input field: e.g #my-stub--file-upload');
       return false;
@@ -9,7 +9,7 @@
       this.errors.push('Sorry, kindly provide a selector for your table element: e.g #my-stub--table');
       return false;
     }
-
+    this.createFile = createFile;
     this.tableId = tableElementId;
     this.fileInputId = fileInputElementId;
 
@@ -49,12 +49,17 @@
       return result;
     },
     fileProcessor: function () {
-      const readFile = function (file) {
+      const readFile = async function (file) {
         var reader = new FileReader();
-        reader.readAsText(file);
+        await reader.readAsText(file);
 
         const readSuccess = function (event) {
           this.csvResults = this.parseCSVContentAndReturnRows(event.target.result);
+
+          if (this.createFile && this.createFile.type === 'csv') {
+            this.generateProfitLossStatementCSV();
+          }
+
           this.statementGenerator();
         }.bind(this);
 
@@ -92,70 +97,70 @@
       const tableId = this.tableId;
       const currentYearValue = new Date().getFullYear();
 
-      const populateTable = function (rows) {
-        const tableElement = document.getElementById(tableId);
+      try {
+        const populateTable = function (rows) {
+          const tableElement = document.getElementById(tableId);
 
-        const tableBody = tableElement.getElementsByTagName('tbody')[0];
-        const tableHead = tableElement.getElementsByTagName('thead')[0];
+          const tableBody = tableElement.getElementsByTagName('tbody')[0];
+          const tableHead = tableElement.getElementsByTagName('thead')[0];
 
-        // Clear any previous data
-        tableHead.innerHTML = '';
-        tableBody.innerHTML = '';
+          tableHead.innerHTML = '';
+          tableBody.innerHTML = '';
 
-        const tableHeadTr = document.createElement('tr');
-        tableHeadTr.innerHTML = `
+          const tableHeadTr = document.createElement('tr');
+          tableHeadTr.innerHTML = `
           <th>Current Year (${currentYearValue}) - values in ZAR </th>
           <th>Prior Year (${parseInt(currentYearValue) - 1}) - values in ZAR</th>`;
-        tableHead.appendChild(tableHeadTr);
+          tableHead.appendChild(tableHeadTr);
 
-        let specificYearData = {
-          [currentYearValue - 1]: {
-            expenses: [],
-            income: [],
-          },
-          [currentYearValue]: {
-            expenses: [],
-            income: [],
-          },
-        };
+          let specificYearData = {
+            [currentYearValue - 1]: {
+              expenses: [],
+              income: [],
+            },
+            [currentYearValue]: {
+              expenses: [],
+              income: [],
+            },
+          };
 
-        for (let i = 1; i < rows.length; i++) {
-          const row = rows[i];
+          for (let i = 1; i < rows.length; i++) {
+            const row = rows[i];
 
-          for (let j = 0; j < row.length; j++) {
-            if (j > 1) {
-              const expenseIncomeType = (columnsLabels[j] || 'unknown').replace(/[\r\n]+/g, '');
-              if (row[j] < 0) {
-                specificYearData[row[1]].expenses.push({ label: expenseIncomeType, value: parseFloat(row[j]) });
-              } else {
-                specificYearData[row[1]].income.push({ label: expenseIncomeType, value: parseFloat(row[j]) });
+            for (let j = 0; j < row.length; j++) {
+              if (j > 1) {
+                const expenseIncomeType = (columnsLabels[j] || 'unknown').replace(/[\r\n]+/g, '');
+                if (row[j] < 0) {
+                  specificYearData[row[1]].expenses.push({ label: expenseIncomeType, value: parseFloat(row[j]) });
+                } else {
+                  specificYearData[row[1]].income.push({ label: expenseIncomeType, value: parseFloat(row[j]) });
+                }
               }
             }
           }
-        }
 
-        const tableBodyTrIncome = document.createElement('tr');
-        const tableBodyTrExpense = document.createElement('tr');
+          const tableBodyTrIncome = document.createElement('tr');
+          const tableBodyTrExpense = document.createElement('tr');
 
-        Object.keys(specificYearData).map((yearKey) => {
-          const currentYearExpenses = specificYearData[yearKey].expenses;
-          const currentYearIncome = specificYearData[yearKey].income;
+          Object.keys(specificYearData).map((yearKey) => {
+            const currentYearExpenses = specificYearData[yearKey].expenses;
+            const currentYearIncome = specificYearData[yearKey].income;
 
-          const totalExpenses = currentYearExpenses.reduce(
-            (accumulator, currentValue) => accumulator + currentValue.value,
-            0
-          );
-          const totalIncome = currentYearIncome.reduce(
-            (accumulator, currentValue) => accumulator + currentValue.value,
-            0
-          );
+            const totalExpenses = currentYearExpenses.reduce(
+              (accumulator, currentValue) => accumulator + currentValue.value,
+              0
+            );
+            const totalIncome = currentYearIncome.reduce(
+              (accumulator, currentValue) => accumulator + currentValue.value,
+              0
+            );
 
-          let formattedAmount = new Intl.NumberFormat('en-ZA', {
-            style: 'currency',
-            currency: 'ZAR',
-          }).format(totalIncome - totalExpenses);
+            let formattedAmount = new Intl.NumberFormat('en-ZA', {
+              style: 'currency',
+              currency: 'ZAR',
+            }).format(totalIncome - totalExpenses);
 
-          tableBodyTrIncome.innerHTML += `
+            tableBodyTrIncome.innerHTML += `
           <td>
             <strong>Revenue items:</strong>
             ${currentYearIncome
@@ -171,7 +176,7 @@
           </td>
           `;
 
-          tableBodyTrExpense.innerHTML += `<td>
+            tableBodyTrExpense.innerHTML += `<td>
               <strong>Expense items</strong>
                ${currentYearExpenses
                  .map((expenseItem) => {
@@ -188,15 +193,53 @@
             </div>
           </td>
           `;
-        });
-        tableBody.appendChild(tableBodyTrIncome);
-        tableBody.appendChild(tableBodyTrExpense);
-      }.bind(this);
+          });
 
-      populateTable(this.csvResults);
+          tableBody.appendChild(tableBodyTrIncome);
+          tableBody.appendChild(tableBodyTrExpense);
+        }.bind(this);
+
+        populateTable(this.csvResults);
+      } catch (e) {
+        this.errors.push(e.message);
+      }
     },
     generateProfitLossStatementPDF: function () {
-      return { pdfDownloadURL: 'https://stub.africa/business-name/statements/:id' };
+      return { pdfDownloadURL: 'https://stub.africa/business-name/statements/pdf/:id' };
+    },
+    generateProfitLossStatementCSV: function () {
+      const table = document.getElementById(this.tableId);
+      let csv = [];
+
+      for (let row of table.rows) {
+        let rowData = [];
+
+        for (let cell of row.cells) {
+          rowData.push(cell.innerText);
+        }
+
+        csv.push(rowData.join(','));
+      }
+
+      const csvString = csv.join('\n');
+
+      const blob = new Blob([csvString], { type: 'text/csv;charset=utf-8;' });
+
+      if (this.createFile.autoDownload) {
+        const link = document.createElement('a');
+
+        const url = URL.createObjectURL(blob);
+        link.setAttribute('href', url);
+
+        link.setAttribute('download', `profit-loss-${new Date().getTime()}.csv`);
+
+        document.body.appendChild(link);
+        link.click();
+
+        document.body.removeChild(link);
+        return true;
+      }
+      return { csvURL: 'https://stub.africa/business-name/statements/csv/:id' };
     },
   };
 

@@ -122,10 +122,16 @@
     </table>
 
     <script>
-      new stubAfrica({
+      const stub = new stubAfrica({
         tableElementId: 'income-expense-table',
         fileInputElementId: 'file-upload',
-      }).fileProcessor();
+        createFile: {
+          type: 'csv',
+          autoDownload: true,
+        },
+      });
+
+      stub.fileProcessor();
     </script>
   </body>
 </html>
