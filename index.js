@@ -143,19 +143,18 @@ stubAfrica.prototype = {
           const currentYearExpenses = specificYearData[yearKey].expenses;
           const currentYearIncome = specificYearData[yearKey].income;
 
-          const totalExpenses = currentYearExpenses.reduce(
-            (accumulator, currentValue) => accumulator + currentValue.value,
-            0
-          );
+          const totalExpenses = currentYearExpenses.reduce((accumulator, currentValue) => {
+            let val = currentValue.value;
+            if (currentValue.value < 0) {
+              val = val * -1;
+            }
+
+            return accumulator + val;
+          }, 0);
           const totalIncome = currentYearIncome.reduce(
             (accumulator, currentValue) => accumulator + currentValue.value,
             0
           );
-
-          let formattedAmount = new Intl.NumberFormat('en-ZA', {
-            style: 'currency',
-            currency: 'ZAR',
-          }).format(totalIncome - totalExpenses);
 
           tableBodyTrIncome.innerHTML += `
           <td>
@@ -163,13 +162,15 @@ stubAfrica.prototype = {
             ${currentYearIncome
               .map((incomeItem) => {
                 if (incomeItem.value) {
-                  return `<div style="padding: 5px; font-style: italic;">${incomeItem.label}: ${incomeItem.value}</div>`;
+                  return `<div style="padding: 5px; font-style: italic;">${incomeItem.label}: ${this.formattedAmount(
+                    incomeItem.value
+                  )}</div>`;
                 }
 
                 return null;
               })
               .join('')}
-            <strong>Total Revenue: ${totalIncome}</strong>
+            <strong>Total Revenue: ${this.formattedAmount(totalIncome)}</strong>
           </td>
           `;
 
@@ -178,15 +179,17 @@ stubAfrica.prototype = {
                ${currentYearExpenses
                  .map((expenseItem) => {
                    if (expenseItem.value) {
-                     return `<div style="padding: 5px; font-style: italic;">${expenseItem.label}: ${expenseItem.value}</div>`;
+                     return `<div style="padding: 5px; font-style: italic;">${
+                       expenseItem.label
+                     }: ${this.formattedAmount(expenseItem.value)}</div>`;
                    }
 
                    return null;
                  })
                  .join('')}
-            <strong>Total Expenses: ${Math.abs(totalExpenses)}</strong>
+            <strong>Total Expenses: ${this.formattedAmount(Math.abs(totalExpenses))}</strong>
             <div style="margin: 20px auto;">
-              <strong>Profit/Loss: ${formattedAmount}</strong>
+              <strong>Profit/Loss: ${this.formattedAmount(totalIncome - totalExpenses)}</strong>
             </div>
           </td>
           `;
@@ -237,5 +240,12 @@ stubAfrica.prototype = {
       return true;
     }
     return { csvURL: 'https://stub.africa/business-name/statements/csv/:id' };
+  },
+
+  formattedAmount: function (valueToFormat) {
+    return Intl.NumberFormat('en-ZA', {
+      style: 'currency',
+      currency: 'ZAR',
+    }).format(String(valueToFormat).replaceAll('\x20', ''));
   },
 };
