@@ -10,7 +10,7 @@
       href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&family=Roboto:ital,wght@0,100..900;1,100..900&display=swap"
       rel="stylesheet"
     />
-    <title>stub Csv Processor</title>
+    <title>stub - Profit & Loss</title>
     <script src="https://unpkg.com/@tailwindcss/browser@4"></script>
     <script src="index.js"></script>
 
@@ -18,24 +18,40 @@
       body {
         background: #141418;
         color: #fff;
-        font-family: 'Roboto', 'DM Sans', serif;
+        font-family: 'Public Sans', 'Roboto', 'DM Sans', serif;
         font-optical-sizing: auto;
       }
+
+      .main-container {
+        border: 1px solid #2b2b2f;
+        box-shadow: 0 12px 72px 0 rgba(0, 0, 0, 0.4);
+        margin: 25px;
+        padding: 35px 15px;
+        display: flex;
+        flex-flow: column;
+        justify-content: center;
+      }
+
       .file-upload-btn input[type='file'] {
         display: none;
       }
+
       .dazzle {
         background: linear-gradient(-40deg, #6477e3, #00a86b, #f7d600);
         background-clip: text;
         -webkit-text-fill-color: transparent;
         font-weight: 900;
         user-select: none;
-        font-size: 66px;
-        line-height: 72px;
-        max-width: 60%;
-        font-family: sans-serif;
+        font-size: 46px;
+        line-height: 52px;
         text-align: center;
-        animation: typing 6s steps(60) 1s forwards, blink 0.75s step-end infinite;
+      }
+
+      .stub-btn {
+        background-color: #fff;
+        border-radius: 8px;
+        color: #32333c;
+        padding: 9px 12px;
       }
 
       .stub-green--bg {
@@ -44,6 +60,13 @@
 
       .stub-green--text {
         color: #00a86b;
+      }
+
+      .table-heading {
+        font-weight: 900;
+        margin-bottom: 5px;
+        font-size: 18px;
+        text-transform: capitalize;
       }
 
       .typewriter-effect {
@@ -55,9 +78,150 @@
         animation: typing 4s steps(33) 1s forwards, blink 0.35s step-end infinite;
       }
 
-      @media screen and (max-width: 580px) {
+      .fade-in {
+        opacity: 0;
+        animation: fadeIn 2s forwards;
+      }
+
+      .note-to--user {
+        font-size: 14px;
+      }
+
+      .income-expense--container {
+        background-color: #1f1f23;
+        border-radius: 12px;
+        width: 100%;
+        margin: auto;
+        min-height: 250px;
+      }
+
+      .title-sub--label {
+        text-align: center;
+        margin: 5px 0;
+      }
+
+      .stub-logo {
+        margin: 24px auto;
+      }
+
+      .statement-container {
+        width: 80%;
+        margin: 25px auto;
+        background-color: #1f1f23;
+        padding: 20px;
+        border-radius: 12px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        color: #fff;
+      }
+
+      .statement-row {
+        display: grid;
+        grid-template-rows: repeat(1, 1fr);
+        padding: 10px;
+        border-bottom: 1px solid #2b2b2f;
+        text-align: left;
+      }
+
+      .statement-row .label {
+        text-transform: uppercase;
+        display: contents;
+      }
+
+      .statement-row .amount {
+        text-align: right;
+        display: flex;
+      }
+
+      .total-row {
+        color: #00a86b;
+        background: #1f1f23;
+        padding: 12px;
+        font-weight: 900;
+        margin-top: 25px;
+        margin-right: 10px;
+        border-radius: 12px;
+      }
+
+      .total-row .amount {
+        color: #fff;
+      }
+
+      .profit-loss--statement-heading {
+        margin: auto;
+        text-align: center;
+        margin: 24px 0;
+      }
+
+      .profit-loss--statement-heading .statement-heading {
+        font-size: 19px;
+        font-weight: 900;
+        line-height: 24px;
+      }
+
+      .profit-loss--container {
+        margin: 25px 0;
+        padding: 36px;
+        border: 1px solid #2b2b2f;
+        border-radius: 12px;
+      }
+
+      .profit-loss--container .box {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        width: 100%;
+      }
+
+      .pre-content--info {
+        display: flex;
+        justify-content: center;
+      }
+
+      .pre-content--info img {
+        margin: auto;
+      }
+
+      .sub-item {
+        display: flex;
+      }
+
+      @media screen and (max-width: 720px) {
         .typewriter-effect {
           white-space: pre-wrap;
+        }
+
+        .dazzle {
+          font-size: 36px;
+          line-height: 42px;
+        }
+
+        .main-container {
+          padding: 15px;
+        }
+
+        .statement-row:last-child {
+          border-bottom: none;
+        }
+
+        .profit-loss--container .box {
+          display: flex;
+          padding: 10px;
+          flex-direction: column;
+        }
+
+        .statement-row .amount {
+          text-align: left;
+        }
+
+        .statement-row .amount.before-tax,
+        .statement-row .amount.after-tax {
+          display: block;
+        }
+      }
+
+      @media screen and (max-width: 380px) {
+        .sub-item {
+          display: none;
+          visibility: hidden;
         }
       }
 
@@ -76,23 +240,6 @@
         }
       }
 
-      table {
-        border-collapse: collapse;
-        width: 100%;
-      }
-      th,
-      td {
-        border: 1px solid #6477e3;
-        padding: 15px;
-        text-align: left;
-        vertical-align: baseline;
-      }
-
-      .fade-in {
-        opacity: 0;
-        animation: fadeIn 2s forwards;
-      }
-
       @keyframes fadeIn {
         from {
           opacity: 0;
@@ -101,40 +248,68 @@
           opacity: 1;
         }
       }
-      .note-to--user {
-        font-size: 14px;
-      }
     </style>
   </head>
 
-  <body class="bg-gray-100 flex flex-col items-center justify-center min-h-screen fade-in">
-    <h1 class="mb-10 dazzle typewriter-effect">written with love, for stub Africa</h1>
-    <div class="file-upload-btn mb-10">
-      <label
-        for="file-upload"
-        class="stub-green--bg text-white font-semibold py-3 px-6 rounded-lg cursor-pointer transition-all duration-300 ease-in-out transform hover:scale-105"
-      >
-        Choose CSV File
-        <input type="file" id="file-upload" name="file" class="hidden" accept=".csv, text/csv" />
-      </label>
+  <body class="bg-gray-100 fade-in">
+    <header>
+      <img
+        class="stub-logo"
+        height="45"
+        width="99"
+        src="https://stub.africa/_nuxt/stub-logo-inverted.CZnQK275.svg"
+        alt="Stub"
+      />
+    </header>
+
+    <div class="main-container">
+      <h1 class="dazzle">Profit & Loss Statement</h1>
+      <p class="title-sub--label">Your business's revenue and expenses</p>
+      <div id="file-info" class="mt-4 text-center text-gray-700"></div>
+
+      <div class="income-expense--container flex flex-col items-center justify-center">
+        <div class="my-12 file-upload-btn mb-10">
+          <label
+            for="file-upload"
+            class="stub-btn text-white font-semibold py-3 px-6 rounded-lg cursor-pointer transition-all duration-300 ease-in-out transform opacity-75 transition-opacity hover:opacity-100 flex items-center justify-between"
+          >
+            Choose CSV file
+            <input type="file" id="file-upload" name="file" class="hidden" accept=".csv, text/csv" />
+
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="20"
+              height="20"
+              fill="currentColor"
+              class="ml-2"
+              viewBox="0 0 16 16"
+            >
+              <path
+                d="M8 0C3.58 0 0 3.58 0 8s3.58 8 8 8 8-3.58 8-8-3.58-8-8-8zm0 14C4.69 14 1 10.31 1 8S4.69 2 8 2s7 3.69 7 7-3.69 7-7 7zm-1-7H5v2h2V7zm3 0H8v2h2V7z"
+              />
+            </svg>
+          </label>
+        </div>
+      </div>
+
+      <div class="profit-loss--container">
+        <div class="pre-content--info">
+          <p class="p-12 font-light text-center items-center">
+            <img class="dm" src="https://stub.africa/_nuxt/growth.dm.Cs2KInFV.svg" alt="Growth" />
+            Dear customer, your profit & loss statement will appear here after processing.
+          </p>
+        </div>
+      </div>
     </div>
-
-    <div class="note-to--user">Your profit/loss statement will show here</div>
-    <div id="file-info" class="mt-4 text-center text-gray-700"></div>
-
-    <table id="income-expense-table">
-      <thead></thead>
-      <tbody></tbody>
-    </table>
-
     <script>
       const stub = new stubAfrica({
-        tableElementId: 'income-expense-table',
+        profitLossContainerId: 'profit-loss--container',
         fileInputElementId: 'file-upload',
         createFile: {
-          type: 'csv',
+          type: 'pdf',
           autoDownload: true,
         },
+        businessType: 'sbc',
       });
 
       stub.fileProcessor();
