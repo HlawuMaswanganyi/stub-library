@@ -99,12 +99,13 @@ stubAfrica.prototype = {
   generateProfitLossStatementHTMLContainer: function () {
     const columnsLabels = this.csvResults[0];
     const profitAndLossContainer = this.profitAndLossContainer;
+
+    const profitAndLossContainerElement =
+      document.getElementById(profitAndLossContainer) || document.querySelector(`.${profitAndLossContainer}`);
+
     const currentYearValue = new Date().getFullYear();
     try {
       const populateProfitLossContainer = function (rows) {
-        const profitAndLossContainerElement =
-          document.getElementById(profitAndLossContainer) || document.querySelector(`.${profitAndLossContainer}`);
-
         if (!profitAndLossContainerElement) {
           const container = document.createElement('div');
 
@@ -152,11 +153,6 @@ stubAfrica.prototype = {
           }
         }
 
-        const profitLossContentContainer = document.createElement('div');
-        profitLossContentContainer.setAttribute('class', 'statement-container');
-
-        profitLossContentContainer.innerHTML = '';
-
         const headingContainer = document.createElement('div');
         headingContainer.setAttribute('class', 'profit-loss--statement-heading');
 
@@ -178,9 +174,7 @@ stubAfrica.prototype = {
         const beforeTaxIncomeContainer = document.createElement('div');
         beforeTaxIncomeContainer.setAttribute('class', 'box');
 
-        const reversed = this.reverseObjectDescKeys(specificYearData);
-
-        Object.keys(reversed).map((yearKey) => {
+        Object.keys(specificYearData).map((yearKey) => {
           const currentYearExpenses = specificYearData[yearKey].expenses;
           const currentYearIncome = specificYearData[yearKey].income;
 
@@ -301,6 +295,7 @@ stubAfrica.prototype = {
       populateProfitLossContainer(this.csvResults);
     } catch (e) {
       console.log('Error ', e.message);
+      profitAndLossContainerElement.innerHTML = `<p style="text-align: center;border-radius: 12px;padding: 12px; background-color: #e1413b">Sorry, it seems like something went wrong. The file might have a different formatting than expected.</p>`;
       this.errors.push(e.message);
     }
   },
@@ -384,7 +379,6 @@ stubAfrica.prototype = {
 
     return tax;
   },
-
   combineSameKeyValues: function (arr) {
     if (!Array.isArray(arr)) return arr;
     const duplicates = [];
@@ -399,20 +393,17 @@ stubAfrica.prototype = {
 
     return duplicates;
   },
-  reverseObjectDescKeys: function (obj) {
-    const reversedObj = Object.keys(obj)
-      .sort((a, b) => b - a) // Sort the keys in descending order
-      .reduce((acc, key) => {
-        acc[key] = obj[key]; // Add the key-value pair to the new object
-        return acc;
-      }, {});
-
-    return reversedObj;
-  },
   formattedAmount: function (valueToFormat) {
     return Intl.NumberFormat('en-ZA', {
       style: 'currency',
       currency: 'ZAR',
     }).format(String(valueToFormat).replaceAll('\x20', ''));
+  },
+
+  loadDependencyScript: function (src, callback) {
+    const script = document.createElement('script');
+    script.src = src;
+    script.onload = callback;
+    document.head.appendChild(script);
   },
 };
