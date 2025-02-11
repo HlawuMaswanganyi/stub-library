@@ -1,4 +1,10 @@
-const stubAfrica = function ({ profitLossContainerId, fileInputElementId, createFile, businessType }) {
+const stubAfrica = function ({
+  profitLossContainerSelector,
+  fileInputElementId,
+  createFile,
+  businessType,
+  printOptions,
+}) {
   if (!fileInputElementId) {
     this.errors.push('Sorry, kindly provide a selector for your file upload input field: e.g #my-stub--file-upload');
     return false;
@@ -8,9 +14,10 @@ const stubAfrica = function ({ profitLossContainerId, fileInputElementId, create
     this.errors.push('Sorry, kindly provide a selector for your table element: e.g #my-stub--table');
     return false;
   }
+  this.printOptions = printOptions;
   this.businessType = businessType;
   this.createFile = createFile;
-  this.profitAndLossContainer = profitLossContainerId;
+  this.profitAndLossContainer = profitLossContainerSelector;
   this.fileInputId = fileInputElementId;
 
   this.errors = [];
@@ -21,6 +28,8 @@ const stubAfrica = function ({ profitLossContainerId, fileInputElementId, create
 
 stubAfrica.prototype = {
   init: function () {
+    this.loadDependencyScript('https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.9.2/html2pdf.bundle.js');
+
     console.log("All good, stub's running babe, go on!");
     const profitAndLossContainer = this.profitAndLossContainer;
 
@@ -120,8 +129,6 @@ stubAfrica.prototype = {
     const currentYearValue = new Date().getFullYear();
     try {
       const populateProfitLossContainer = function (rows) {
-        profitAndLossContainerElement.innerHTML = '';
-
         let specificYearData = {
           [currentYearValue - 1]: {
             expenses: [],
@@ -162,7 +169,7 @@ stubAfrica.prototype = {
 
         const headingContainer = document.createElement('div');
         headingContainer.setAttribute('class', 'profit-loss--statement-heading');
-
+        profitAndLossContainerElement.innerHTML = ``;
         headingContainer.innerHTML = `
           <div class='statement-heading'>Profit & Loss</div>
           <div>${currentYearValue - 1} - ${currentYearValue}<div>
@@ -294,11 +301,49 @@ stubAfrica.prototype = {
           `;
         });
 
-        profitAndLossContainerElement.appendChild(headingContainer);
-        profitAndLossContainerElement.appendChild(revenueContainer);
-        profitAndLossContainerElement.appendChild(expensesContainer);
-        profitAndLossContainerElement.appendChild(beforeTaxIncomeContainer);
-        profitAndLossContainerElement.appendChild(netIncomeContainer);
+        try {
+          const statementHolderSelectorClass = 'statement-holder';
+          const statementHolder = document.createElement('div');
+
+          if (this.printOptions.theme === 'dark') {
+            statementHolder.style.background = '#141418';
+          }
+
+          statementHolder.style.padding = '12px';
+          statementHolder.setAttribute('class', statementHolderSelectorClass);
+
+          profitAndLossContainerElement.appendChild(statementHolder);
+
+          const contentToSave = document.querySelector(`.${statementHolderSelectorClass}`);
+
+          const downloadButton = document.createElement('button');
+          downloadButton.innerHTML = 'Download statement';
+          downloadButton.setAttribute('class', 'btn stub-btn action-button pdf-button');
+          downloadButton.style.cursor = 'pointer';
+          downloadButton.style.display = 'flex';
+          downloadButton.style.margin = '24px auto';
+
+          statementHolder.appendChild(headingContainer);
+          statementHolder.appendChild(revenueContainer);
+          statementHolder.appendChild(expensesContainer);
+          statementHolder.appendChild(beforeTaxIncomeContainer);
+          statementHolder.appendChild(netIncomeContainer);
+
+          profitAndLossContainerElement.appendChild(downloadButton);
+
+          downloadButton.addEventListener('click', () => {
+            html2pdf()
+              .set({
+                html2canvas: {
+                  backgroundColor: '#141418',
+                },
+                html2canvas: { scale: 2 },
+                jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' },
+              })
+              .from(contentToSave)
+              .save('profit-and-loss-statement.pdf');
+          });
+        } catch (e) {}
       }.bind(this);
 
       populateProfitLossContainer(this.csvResults);
@@ -309,8 +354,6 @@ stubAfrica.prototype = {
     }
   },
   generateProfitLossStatementPDF: function () {
-    console.log('Generate PDF');
-
     let pdf = [];
 
     const pdfString = pdf.join('\n');
@@ -318,18 +361,6 @@ stubAfrica.prototype = {
     const blob = new Blob([pdfString], { type: 'text/pdf;charset=utf-8;' });
 
     if (this.createFile.autoDownload) {
-      // const link = document.createElement('a');
-      // const url = URL.createObjectURL(blob);
-      // link.setAttribute('href', url);
-      // link.style.textDecoration = 'underline';
-      // link.style.display = 'flex';
-      // link.style.textAlign = 'center';
-      // link.style.margin = '12px';
-      // link.style.justifySelf = 'center';
-      // link.setAttribute('download', `profit-loss-${new Date().getTime()}.pdf`);
-      // link.innerText = 'Download Statement';
-      // document.body.appendChild(link);
-      // return true;
     }
 
     return { pdfDownloadURL: 'https://stub.africa/business-name/statements/pdf/:id' };

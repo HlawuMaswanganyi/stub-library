@@ -12,10 +12,6 @@
     />
     <title>stub - Profit & Loss</title>
     <script src="https://unpkg.com/@tailwindcss/browser@4"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/es6-promise/4.2.8/es6-promise.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.2/html2pdf.bundle.min.js"></script>
     <script src="index.js"></script>
 
     <style>
@@ -180,6 +176,13 @@
         display: flex;
       }
 
+      .btn[disabled] {
+        opacity: 0.6;
+        color: #fff;
+        background-color: #9f9faa;
+        cursor: not-allowed;
+      }
+
       @media screen and (max-width: 720px) {
         .dazzle {
           font-size: 36px;
@@ -285,7 +288,7 @@
       </div>
 
       <div class="profit-loss--container">
-        <div class="pre-content--info">
+        <div class="pre-content--info remove-on-statement--load">
           <p class="p-12 font-light text-center items-center">
             <img class="dm" src="https://stub.africa/_nuxt/growth.dm.Cs2KInFV.svg" alt="Growth" />
             Dear customer, your profit & loss statement will appear here after processing.
@@ -294,31 +297,15 @@
       </div>
     </div>
 
-    <button id="download-pdf">Download pdf</button>
-
     <script>
-      var element = document.querySelector('.main-container');
-
-      document.getElementById('download-pdf').addEventListener('click', function () {
-        console.log('Downloading...');
-        html2pdf()
-          .from(element)
-          .set({
-            margin: 10,
-            filename: 'custom_document.pdf',
-            image: { type: 'jpeg', quality: 0.98 },
-            html2canvas: { scale: 2 },
-            jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
-          })
-          .save();
-      });
-
       const stub = new stubAfrica({
-        profitLossContainerId: 'profit-loss--container',
+        profitLossContainerSelector: 'profit-loss--container',
         fileInputElementId: 'file-upload',
         createFile: {
           type: 'pdf',
-          autoDownload: true,
+        },
+        printOptions: {
+          theme: 'dark',
         },
         businessType: 'sbc',
       });
