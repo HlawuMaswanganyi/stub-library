@@ -244,28 +244,30 @@ stubAfrica.prototype = {
           </div>`;
 
           expensesContainer.innerHTML += `
-          <div class="statement-row">
+           <div class="statement-row">
             <div class="item-block">
               <span class="stub-green--text table-heading">${yearKey} Expenses </span>
-             
-              ${finalExpenses
-                .map((expenseItem) => {
-                  if (expenseItem.value) {
-                    return `<div class="sub-item" style="width: 100%; justify-content: space-between; padding: 5px; color: #9f9faa; font-size: 14px; font-weight: 300;text-transform: capitalize;">${
-                      expenseItem.label
-                    }: ${this.formattedAmount(expenseItem.value)}</div>`;
-                  }
-
-                  return null;
-                })
-                .join('')}
-             
+              
+               ${finalExpenses
+                 .map((expenseItem) => {
+                   if (expenseItem.value) {
+                     return `
+                      <div class="sub-item" style="width: 100%; justify-content: space-between; padding: 5px; color: #9f9faa; font-size: 14px; font-weight: 300;text-transform: capitalize;">
+                        <div>${expenseItem.label}</div>
+                        <div>${this.formattedAmount(expenseItem.value)}</div>
+                      </div>`;
+                   }
+                   return null;
+                 })
+                 .join('')}
+              
             </div>
-            <div class="amount" style="margin-top: 5px; width: 100%; justify-content: space-between">
+            <div class="amount" style="margin-top: 5px; width: 100%;display: flex; justify-content: space-between;">
               <div>Total</div>
               <div>${this.formattedAmount(Math.abs(totalExpenses))}</div>
             </div>
-          </div>`;
+          </div>
+          `;
 
           beforeTaxIncomeContainer.innerHTML += `
           <div class="statement-row">
@@ -309,21 +311,18 @@ stubAfrica.prototype = {
     const blob = new Blob([pdfString], { type: 'text/pdf;charset=utf-8;' });
 
     if (this.createFile.autoDownload) {
-      const link = document.createElement('a');
-
-      const url = URL.createObjectURL(blob);
-      link.setAttribute('href', url);
-      link.style.textDecoration = 'underline';
-      link.style.display = 'flex';
-      link.style.textAlign = 'center';
-      link.style.margin = '12px';
-      link.style.justifySelf = 'center';
-
-      link.setAttribute('download', `profit-loss-${new Date().getTime()}.pdf`);
-      link.innerText = 'Download Statement';
-
-      document.body.appendChild(link);
-      return true;
+      // const link = document.createElement('a');
+      // const url = URL.createObjectURL(blob);
+      // link.setAttribute('href', url);
+      // link.style.textDecoration = 'underline';
+      // link.style.display = 'flex';
+      // link.style.textAlign = 'center';
+      // link.style.margin = '12px';
+      // link.style.justifySelf = 'center';
+      // link.setAttribute('download', `profit-loss-${new Date().getTime()}.pdf`);
+      // link.innerText = 'Download Statement';
+      // document.body.appendChild(link);
+      // return true;
     }
 
     return { pdfDownloadURL: 'https://stub.africa/business-name/statements/pdf/:id' };

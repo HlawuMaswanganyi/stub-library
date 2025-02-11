@@ -12,7 +12,10 @@
     />
     <title>stub - Profit & Loss</title>
     <script src="https://unpkg.com/@tailwindcss/browser@4"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.9.2/html2pdf.bundle.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/es6-promise/4.2.8/es6-promise.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.2/html2pdf.bundle.min.js"></script>
     <script src="index.js"></script>
 
     <style>
@@ -303,6 +306,20 @@
       </div>
     </div>
     <script>
+      var element = document.getElementById('element-to-print');
+      var opt = {
+        margin: 1,
+        filename: 'myfile.pdf',
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: { scale: 2 },
+        jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' },
+      };
+
+      // New Promise-based usage:
+      html2pdf().from(element).set(opt).save();
+
+      // Old monolithic-style usage:
+      html2pdf(element, opt);
       const stub = new stubAfrica({
         profitLossContainerId: 'profit-loss--container',
         fileInputElementId: 'file-upload',
