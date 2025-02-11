@@ -22,6 +22,22 @@ const stubAfrica = function ({ profitLossContainerId, fileInputElementId, create
 stubAfrica.prototype = {
   init: function () {
     console.log("All good, stub's running babe, go on!");
+    const profitAndLossContainer = this.profitAndLossContainer;
+
+    const profitAndLossContainerElement =
+      document.getElementById(profitAndLossContainer) || document.querySelector(`.${profitAndLossContainer}`);
+
+    if (!profitAndLossContainerElement) {
+      const container = document.createElement('div');
+      const mainContainer = document.querySelector('.main-container');
+      if (mainContainer) {
+        mainContainer.appendChild(container);
+      } else {
+        document.body.appendChild(container);
+      }
+      container.setAttribute('class', 'profit-loss--container');
+    }
+
     return true;
   },
   reset: function () {
@@ -98,21 +114,12 @@ stubAfrica.prototype = {
   },
   generateProfitLossStatementHTMLContainer: function () {
     const columnsLabels = this.csvResults[0];
-    const profitAndLossContainer = this.profitAndLossContainer;
-
     const profitAndLossContainerElement =
-      document.getElementById(profitAndLossContainer) || document.querySelector(`.${profitAndLossContainer}`);
+      document.getElementById(this.profitAndLossContainer) || document.querySelector(`.${this.profitAndLossContainer}`);
 
     const currentYearValue = new Date().getFullYear();
     try {
       const populateProfitLossContainer = function (rows) {
-        if (!profitAndLossContainerElement) {
-          const container = document.createElement('div');
-
-          document.body.appendChild(container);
-          // .setAttribute('class', 'statement-container')
-        }
-
         profitAndLossContainerElement.innerHTML = '';
 
         let specificYearData = {

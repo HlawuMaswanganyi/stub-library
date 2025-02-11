@@ -73,15 +73,6 @@
         text-transform: capitalize;
       }
 
-      .typewriter-effect {
-        display: inline-block;
-        white-space: nowrap;
-        overflow: hidden;
-        border-right: 4px solid #fff;
-        width: 0;
-        animation: typing 4s steps(33) 1s forwards, blink 0.35s step-end infinite;
-      }
-
       .fade-in {
         opacity: 0;
         animation: fadeIn 2s forwards;
@@ -166,6 +157,7 @@
         margin: 25px 0;
         padding: 36px;
         border: 1px solid #2b2b2f;
+        box-shadow: 0 12px 72px 0 rgba(0, 0, 0, 0.4);
         border-radius: 12px;
       }
 
@@ -189,10 +181,6 @@
       }
 
       @media screen and (max-width: 720px) {
-        .typewriter-effect {
-          white-space: pre-wrap;
-        }
-
         .dazzle {
           font-size: 36px;
           line-height: 42px;
@@ -305,21 +293,26 @@
         </div>
       </div>
     </div>
+
+    <button id="download-pdf">Download pdf</button>
+
     <script>
-      var element = document.getElementById('element-to-print');
-      var opt = {
-        margin: 1,
-        filename: 'myfile.pdf',
-        image: { type: 'jpeg', quality: 0.98 },
-        html2canvas: { scale: 2 },
-        jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' },
-      };
+      var element = document.querySelector('.main-container');
 
-      // New Promise-based usage:
-      html2pdf().from(element).set(opt).save();
+      document.getElementById('download-pdf').addEventListener('click', function () {
+        console.log('Downloading...');
+        html2pdf()
+          .from(element)
+          .set({
+            margin: 10,
+            filename: 'custom_document.pdf',
+            image: { type: 'jpeg', quality: 0.98 },
+            html2canvas: { scale: 2 },
+            jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+          })
+          .save();
+      });
 
-      // Old monolithic-style usage:
-      html2pdf(element, opt);
       const stub = new stubAfrica({
         profitLossContainerId: 'profit-loss--container',
         fileInputElementId: 'file-upload',
