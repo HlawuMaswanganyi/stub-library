@@ -3,6 +3,13 @@
 </template>
 
 <script setup>
+
+useSeoMeta({
+  title: 'stub - Profit & Loss',
+  ogTitle: 'stub - Profit & Loss',
+  description: 'This is where you see your profit & loss statement.',
+  ogDescription: 'This is where you see your profit & loss statement.',
+})
 import { onMounted, ref, onUpdated } from 'vue';
 
 let componentHasMounted = ref(false);
