@@ -1,6 +1,6 @@
 #How to run the app
 
-Hi stub(with a small 's'), either visit: https://stub-profit-loss-generator.netlify.app/ or double click the html file.
+Hi stub(with a small 's'), either visit: https://stub-profit-loss-generator.netlify.app/ or run `npm install` then `npm run dev` and open [localhost:](http://localhost:3000/)
 
 ##Possible improvements
 
