@@ -96,13 +96,19 @@ stubAfrica.prototype = {
     }.bind(this);
 
     const handleFileUpload = function (e) {
+      console.log('Handling file upload...');
       const csvFile = e.target.files[0];
       this.fileTypeChecker(csvFile);
 
       readFile(e.srcElement.files[0]);
     }.bind(this);
+    if (this.fileInputId) {
+      const fileUploadElement = document.getElementById(this.fileInputId);
 
-    document.getElementById(this.fileInputId).onchange = handleFileUpload;
+      if (fileUploadElement) {
+        fileUploadElement.onchange = handleFileUpload;
+      }
+    }
   },
   statementGenerator: function (statementType = 'PROFIT_LOSS', templateType = 'HTML_TABLE') {
     switch (statementType) {
@@ -311,6 +317,7 @@ stubAfrica.prototype = {
           }
 
           statementHolder.style.padding = '12px';
+
           statementHolder.setAttribute('class', statementHolderSelectorClass);
 
           profitAndLossContainerElement.appendChild(statementHolder);
@@ -336,10 +343,9 @@ stubAfrica.prototype = {
             html2pdf()
               .set({
                 html2canvas: {
-                  backgroundColor: '#141418',
+                  backgroundColor: 'black',
                 },
-                html2canvas: { scale: 2 },
-                jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' },
+                jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' },
               })
               .from(contentToSave)
               .save('profit-and-loss-statement.pdf');
