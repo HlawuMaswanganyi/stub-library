@@ -466,7 +466,7 @@ stubAfrica.prototype = {
 
       .stub-main-container {
         border: 1px solid #2b2b2f;
-        box-shadow: 0 12px 72px 0 rgba(0, 0, 0, 0.4);
+        border-radius: 12px;
         margin: 25px;
         padding: 35px 15px;
         display: flex;
