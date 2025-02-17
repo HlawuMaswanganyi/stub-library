@@ -353,6 +353,7 @@ stubAfrica.prototype = {
 
           profitAndLossContainerElement.appendChild(downloadButton);
 
+          this.scrollToElement(contentToSave);
           downloadButton.addEventListener('click', () => {
             html2pdf()
               .set({
@@ -692,6 +693,14 @@ stubAfrica.prototype = {
         'Failed to load styles. This means that something went horribly wrong! Please reload the page.',
         e.message
       );
+    }
+  },
+  scrollToElement: function s(element) {
+    if (element) {
+      element.scrollIntoView({
+        behavior: 'smooth',
+        block: 'start',
+      });
     }
   },
 };
