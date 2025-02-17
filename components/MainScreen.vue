@@ -19,23 +19,10 @@
         <div class="my-12 file-upload-btn mb-10">
           <label
             for="file-upload"
-            class="stub-btn text-white font-semibold py-3 px-6 rounded-lg cursor-pointer transition-all duration-300 ease-in-out transform opacity-75 transition-opacity hover:opacity-100 flex items-center justify-between"
+            class="stub-btn text-white py-3 px-6 rounded-lg cursor-pointer transition-all duration-300 ease-in-out transform opacity-75 transition-opacity hover:opacity-100 flex items-center justify-between"
           >
             Choose CSV file
             <input type="file" id="file-upload" name="file" class="hidden" accept=".csv, text/csv" />
-
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="20"
-              height="20"
-              fill="currentColor"
-              class="ml-2"
-              viewBox="0 0 16 16"
-            >
-              <path
-                d="M8 0C3.58 0 0 3.58 0 8s3.58 8 8 8 8-3.58 8-8-3.58-8-8-8zm0 14C4.69 14 1 10.31 1 8S4.69 2 8 2s7 3.69 7 7-3.69 7-7 7zm-1-7H5v2h2V7zm3 0H8v2h2V7z"
-              />
-            </svg>
           </label>
         </div>
       </div>
