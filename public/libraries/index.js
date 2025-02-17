@@ -4,6 +4,7 @@ const stubAfrica = function ({
   createFile,
   businessType,
   printOptions,
+  sortDesc,
 }) {
   if (!fileInputElementId) {
     this.errors.push('Sorry, kindly provide a selector for your file upload input field: e.g #my-stub--file-upload');
@@ -14,6 +15,7 @@ const stubAfrica = function ({
     this.errors.push('Sorry, kindly provide a selector for your table element: e.g #my-stub--table');
     return false;
   }
+  this.sortDesc = sortDesc;
   this.printOptions = printOptions;
   this.businessType = businessType;
   this.createFile = createFile;
@@ -96,7 +98,6 @@ stubAfrica.prototype = {
     }.bind(this);
 
     const handleFileUpload = function (e) {
-      console.log('Handling file upload...');
       const csvFile = e.target.files[0];
       this.fileTypeChecker(csvFile);
 
@@ -134,6 +135,8 @@ stubAfrica.prototype = {
       document.getElementById(this.profitAndLossContainer) || document.querySelector(`.${this.profitAndLossContainer}`);
 
     const currentYearValue = new Date().getFullYear();
+    let statementDateLabel = `${currentYearValue - 1} / ${currentYearValue}`;
+
     try {
       const populateProfitLossContainer = function (rows) {
         let specificYearData = {
@@ -174,12 +177,23 @@ stubAfrica.prototype = {
           }
         }
 
+        const annualEntries = Object.entries(specificYearData);
+
+        let reversedSpecificYearData = new Map(annualEntries);
+
+        if (this.sortDesc && this.sortDesc === true) {
+          statementDateLabel = `${currentYearValue} / ${currentYearValue - 1}`;
+          reversedSpecificYearData = new Map(annualEntries.reverse());
+        }
+
+        const modifiedArrayFromReversedKeys = Array.from(reversedSpecificYearData.keys());
+
         const headingContainer = document.createElement('div');
         headingContainer.setAttribute('class', 'profit-loss--statement-heading');
         profitAndLossContainerElement.innerHTML = ``;
         headingContainer.innerHTML = `
           <div class='statement-heading'>Profit & Loss</div>
-          <div>${currentYearValue - 1} - ${currentYearValue}<div>
+          <div>${statementDateLabel}<div>
           
         `;
 
@@ -195,7 +209,7 @@ stubAfrica.prototype = {
         const beforeTaxIncomeContainer = document.createElement('div');
         beforeTaxIncomeContainer.setAttribute('class', 'box');
 
-        Object.keys(specificYearData).map((yearKey) => {
+        modifiedArrayFromReversedKeys.map((yearKey) => {
           const currentYearExpenses = specificYearData[yearKey].expenses;
           const currentYearIncome = specificYearData[yearKey].income;
 
