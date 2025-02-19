@@ -179,18 +179,13 @@ stubAfrica.prototype = {
     try {
       const populateProfitLossContainer = function (rows) {
         let specificYearData = {
-          [currentYearValue - 1]: {
-            expenses: [],
-            income: [],
-          },
-          [currentYearValue]: {
-            expenses: [],
-            income: [],
-          },
+          [currentYearValue - 1]: { expenses: [], income: [] },
+          [currentYearValue]: { expenses: [], income: [] },
         };
 
         for (let i = 1; i < rows.length; i++) {
           const row = rows[i];
+          const yearKey = row[1];
 
           for (let j = 0; j < row.length; j++) {
             if (j > 1) {
@@ -202,12 +197,12 @@ stubAfrica.prototype = {
               }
 
               if (currentCellValue < 0) {
-                specificYearData[row[1]].expenses.push({
+                specificYearData[yearKey].expenses.push({
                   label: expenseIncomeType,
                   value: parseFloat(currentCellValue),
                 });
               } else {
-                specificYearData[row[1]].income.push({
+                specificYearData[yearKey].income.push({
                   label: expenseIncomeType,
                   value: parseFloat(currentCellValue),
                 });
@@ -229,26 +224,23 @@ stubAfrica.prototype = {
 
         const headingContainer = document.createElement('div');
         headingContainer.setAttribute('class', 'profit-loss--statement-heading');
-        profitAndLossContainerElement.innerHTML = ``;
         headingContainer.innerHTML = `
-          <div class='statement-heading'>Profit & Loss</div>
-          <div>${statementDateLabel}<div>
-          
-        `;
+        <div class='statement-heading'>Profit & Loss</div>
+        <div>${statementDateLabel}<div>
+    `;
 
         const revenueContainer = document.createElement('div');
-        revenueContainer.setAttribute('class', 'box');
-
         const expensesContainer = document.createElement('div');
-        expensesContainer.setAttribute('class', 'box');
-
         const netIncomeContainer = document.createElement('div');
-        netIncomeContainer.setAttribute('class', 'box');
-
         const beforeTaxIncomeContainer = document.createElement('div');
+        revenueContainer.setAttribute('class', 'box');
+        expensesContainer.setAttribute('class', 'box');
+        netIncomeContainer.setAttribute('class', 'box');
         beforeTaxIncomeContainer.setAttribute('class', 'box');
 
-        modifiedArrayFromReversedKeys.map((yearKey) => {
+        const fragment = document.createDocumentFragment();
+
+        modifiedArrayFromReversedKeys.forEach((yearKey) => {
           const currentYearExpenses = specificYearData[yearKey].expenses;
           const currentYearIncome = specificYearData[yearKey].income;
 
@@ -258,153 +250,127 @@ stubAfrica.prototype = {
           const finalExpenses = [];
           const finalIncome = [];
 
-          Object.entries(cleansedYearExpenses).map((val) => {
-            const label = val[0];
-
-            const total = val[1];
-            const totalAccumulatedValue = total.reduce((accumulator, currentValue) => accumulator + currentValue, 0);
-
-            finalExpenses.push({ label: label, value: totalAccumulatedValue });
+          Object.entries(cleansedYearExpenses).forEach(([label, total]) => {
+            const totalAccumulatedValue = total.reduce((acc, value) => acc + value, 0);
+            finalExpenses.push({ label, value: totalAccumulatedValue });
           });
 
-          Object.entries(cleansedYearIncome).map((val) => {
-            const label = val[0];
-
-            const total = val[1];
-            const totalAccumulatedValue = total.reduce((accumulator, currentValue) => accumulator + currentValue, 0);
-
-            finalIncome.push({ label: label, value: totalAccumulatedValue });
+          Object.entries(cleansedYearIncome).forEach(([label, total]) => {
+            const totalAccumulatedValue = total.reduce((acc, value) => acc + value, 0);
+            finalIncome.push({ label, value: totalAccumulatedValue });
           });
 
           const totalExpenses = currentYearExpenses.reduce((accumulator, currentValue) => {
             let val = currentValue.value;
-            if (currentValue.value < 0) {
-              val = val * -1;
-            }
-
-            return accumulator + val;
+            return accumulator + (val < 0 ? -val : val);
           }, 0);
 
           const totalRevenue = currentYearIncome.reduce(
             (accumulator, currentValue) => accumulator + currentValue.value,
             0
           );
-
           const revenueMinusExpenses = totalRevenue - totalExpenses;
 
           revenueContainer.innerHTML += `
-          <div class="statement-row">
-            <div class="item-block">
-              <span class="stub-green--text table-heading">${yearKey} Revenue </span>
-              
-               ${finalIncome
-                 .map((incomeItem) => {
-                   if (incomeItem.value) {
-                     return `
-                      <div class="sub-item" style="width: 100%; justify-content: space-between; padding: 5px; color: #9f9faa; font-size: 14px; font-weight: 300;text-transform: capitalize;">
-                        <div>${incomeItem.label}</div>
-                        <div>${this.formattedAmount(incomeItem.value)}</div>
-                      </div>`;
-                   }
-                   return null;
-                 })
-                 .join('')}
-              
-            </div>
-            <div class="amount" style="margin-top: 5px; width: 100%;display: flex; justify-content: space-between;">
-              <div>Total</div>
-              <div>${this.formattedAmount(totalRevenue)}</div>
-            </div>
-          </div>`;
+            <div class="statement-row">
+                <div class="item-block">
+                    <span class="stub-green--text table-heading">${yearKey} Revenue </span>
+                    ${finalIncome
+                      .map((incomeItem) =>
+                        incomeItem.value
+                          ? `
+                            <div class="sub-item" style="width: 100%; justify-content: space-between; padding: 5px; color: #9f9faa; font-size: 14px; font-weight: 300;text-transform: capitalize;">
+                                <div>${incomeItem.label}</div>
+                                <div>${this.formattedAmount(incomeItem.value)}</div>
+                            </div>`
+                          : ''
+                      )
+                      .join('')}
+                </div>
+                <div class="amount" style="margin-top: 5px; width: 100%;display: flex; justify-content: space-between;">
+                    <div>Total</div>
+                    <div>${this.formattedAmount(totalRevenue)}</div>
+                </div>
+            </div>`;
 
           expensesContainer.innerHTML += `
-           <div class="statement-row">
-            <div class="item-block">
-              <span class="stub-green--text table-heading">${yearKey} Expenses </span>
-              
-               ${finalExpenses
-                 .map((expenseItem) => {
-                   if (expenseItem.value) {
-                     return `
-                      <div class="sub-item" style="width: 100%; justify-content: space-between; padding: 5px; color: #9f9faa; font-size: 14px; font-weight: 300;text-transform: capitalize;">
-                        <div>${expenseItem.label}</div>
-                        <div>${this.formattedAmount(expenseItem.value)}</div>
-                      </div>`;
-                   }
-                   return null;
-                 })
-                 .join('')}
-              
-            </div>
-            <div class="amount" style="margin-top: 5px; width: 100%;display: flex; justify-content: space-between;">
-              <div>Total</div>
-              <div>${this.formattedAmount(Math.abs(totalExpenses))}</div>
-            </div>
-          </div>
-          `;
+            <div class="statement-row">
+                <div class="item-block">
+                    <span class="stub-green--text table-heading">${yearKey} Expenses </span>
+                    ${finalExpenses
+                      .map((expenseItem) =>
+                        expenseItem.value
+                          ? `
+                            <div class="sub-item" style="width: 100%; justify-content: space-between; padding: 5px; color: #9f9faa; font-size: 14px; font-weight: 300;text-transform: capitalize;">
+                                <div>${expenseItem.label}</div>
+                                <div>${this.formattedAmount(expenseItem.value)}</div>
+                            </div>`
+                          : ''
+                      )
+                      .join('')}
+                </div>
+                <div class="amount" style="margin-top: 5px; width: 100%;display: flex; justify-content: space-between;">
+                    <div>Total</div>
+                    <div>${this.formattedAmount(Math.abs(totalExpenses))}</div>
+                </div>
+            </div>`;
 
           beforeTaxIncomeContainer.innerHTML += `
-          <div class="statement-row">
-           <div class="amount before-tax" style="margin-top: 5px; width: 100%; justify-content: space-between">
-              <div><span class="stub-green--text table-heading">${yearKey} Income Before Tax</span></div>
-              <div>${this.formattedAmount(revenueMinusExpenses)}</div>
-            </div>
-          </div>`;
+            <div class="statement-row">
+                <div class="amount before-tax" style="margin-top: 5px; width: 100%; justify-content: space-between">
+                    <div><span class="stub-green--text table-heading">${yearKey} Income Before Tax</span></div>
+                    <div>${this.formattedAmount(revenueMinusExpenses)}</div>
+                </div>
+            </div>`;
 
           netIncomeContainer.innerHTML += `
-          <div class="statement-row total-row">
-           <div class="amount after-tax" style="margin-top: 5px; width: 100%; justify-content: space-between">
-              <div><span class="stub-green--text table-heading">${yearKey} Net Income</span></div>
-              <div>${this.formattedAmount(revenueMinusExpenses - this.calculateTax(revenueMinusExpenses))}</div>
-            </div>
-          </div>
-          `;
+            <div class="statement-row total-row">
+                <div class="amount after-tax" style="margin-top: 5px; width: 100%; justify-content: space-between">
+                    <div><span class="stub-green--text table-heading">${yearKey} Net Income</span></div>
+                    <div>${this.formattedAmount(revenueMinusExpenses - this.calculateTax(revenueMinusExpenses))}</div>
+                </div>
+            </div>`;
         });
 
-        try {
-          const statementHolderSelectorClass = 'statement-holder';
-          const statementHolder = document.createElement('div');
+        const statementHolderSelectorClass = 'statement-holder';
+        const statementHolder = document.createElement('div');
+        statementHolder.setAttribute('class', statementHolderSelectorClass);
+        statementHolder.style.padding = '12px';
 
-          if (this.printOptions.theme === 'dark') {
-            statementHolder.style.background = '#141418';
-          }
+        if (this.printOptions.theme === 'dark') {
+          statementHolder.style.background = '#141418';
+        }
 
-          statementHolder.style.padding = '12px';
+        const downloadButton = document.createElement('button');
+        downloadButton.innerHTML = 'Download statement';
+        downloadButton.setAttribute('class', 'btn stub-btn action-button pdf-button');
+        downloadButton.style.cursor = 'pointer';
+        downloadButton.style.display = 'flex';
+        downloadButton.style.margin = '24px auto';
 
-          statementHolder.setAttribute('class', statementHolderSelectorClass);
+        fragment.appendChild(headingContainer);
+        fragment.appendChild(revenueContainer);
+        fragment.appendChild(expensesContainer);
+        fragment.appendChild(beforeTaxIncomeContainer);
+        fragment.appendChild(netIncomeContainer);
+        fragment.appendChild(downloadButton);
 
-          profitAndLossContainerElement.appendChild(statementHolder);
+        profitAndLossContainerElement.innerHTML = '';
+        profitAndLossContainerElement.appendChild(statementHolder);
+        statementHolder.appendChild(fragment);
 
+        this.scrollToElement(statementHolder);
+
+        downloadButton.addEventListener('click', () => {
           const contentToSave = document.querySelector(`.${statementHolderSelectorClass}`);
-
-          const downloadButton = document.createElement('button');
-          downloadButton.innerHTML = 'Download statement';
-          downloadButton.setAttribute('class', 'btn stub-btn action-button pdf-button');
-          downloadButton.style.cursor = 'pointer';
-          downloadButton.style.display = 'flex';
-          downloadButton.style.margin = '24px auto';
-
-          statementHolder.appendChild(headingContainer);
-          statementHolder.appendChild(revenueContainer);
-          statementHolder.appendChild(expensesContainer);
-          statementHolder.appendChild(beforeTaxIncomeContainer);
-          statementHolder.appendChild(netIncomeContainer);
-
-          profitAndLossContainerElement.appendChild(downloadButton);
-
-          this.scrollToElement(contentToSave);
-          downloadButton.addEventListener('click', () => {
-            html2pdf()
-              .set({
-                html2canvas: {
-                  backgroundColor: 'black',
-                },
-                jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' },
-              })
-              .from(contentToSave)
-              .save('profit-and-loss-statement.pdf');
-          });
-        } catch (e) {}
+          html2pdf()
+            .set({
+              html2canvas: { backgroundColor: 'black' },
+              jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' },
+            })
+            .from(contentToSave)
+            .save('profit-and-loss-statement.pdf');
+        });
       }.bind(this);
 
       populateProfitLossContainer(this.csvResults);
