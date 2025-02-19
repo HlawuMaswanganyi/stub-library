@@ -1,6 +1,5 @@
 // https://nuxt.com/docs/api/configuration/nuxt-config
 
-
 export default defineNuxtConfig({
   compatibilityDate: '2024-11-01',
   devtools: { enabled: true },
@@ -15,9 +14,8 @@ export default defineNuxtConfig({
           src: 'https://unpkg.com/@tailwindcss/browser@4',
           type: 'text/javascript',
         },
-      ]
+      ],
     },
   },
-  ssr:true,
-})
-
+  ssr: true,
+});
