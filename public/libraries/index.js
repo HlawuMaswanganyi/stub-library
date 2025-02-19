@@ -680,11 +680,6 @@ stubAfrica.prototype = {
         cursor: not-allowed;
       }
 
-      .file-state {
-        margin: auto;
-        text-align: center;
-      }
-
       @media screen and (max-width: 720px) {
         .dazzle {
           font-size: 36px;
