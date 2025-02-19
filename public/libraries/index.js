@@ -22,6 +22,7 @@ const stubAfrica = function ({
   this.profitAndLossContainer = profitLossContainerSelector;
   this.fileInputId = fileInputElementId;
 
+  this.MAX_FILE_SIZE = 50 * 1024 * 1024;
   this.errors = [];
   this.csvResults = null;
 
@@ -70,39 +71,77 @@ stubAfrica.prototype = {
     const result = [];
     lines.forEach((line) => {
       const cells = line.split(',');
-      cells.map((cell) => cell.replace(/[\r\n]+/g, ' '));
+      cells.map((cell) => {
+        const _cell = cell.replace(/[\r\n]+/g, ' ');
+        const cleansedLine = _cell.replace(/,+/g, '');
+
+        return cleansedLine;
+      });
       result.push(cells);
     });
 
     return result;
   },
   fileProcessor: function () {
+    const profitAndLossContainerElement =
+      document.getElementById(this.profitAndLossContainer) || document.querySelector(`.${this.profitAndLossContainer}`);
+
     const readFile = async function (file) {
-      var reader = new FileReader();
-      await reader.readAsText(file);
-
-      const readSuccess = function (event) {
-        this.csvResults = this.parseCSVContentAndReturnRows(event.target.result);
-
-        if (this.createFile && this.createFile.type === 'csv') {
-          this.generateProfitLossStatementCSV();
-        }
-        if (this.createFile && this.createFile.type === 'pdf') {
-          this.generateProfitLossStatementPDF();
+      return new Promise((resolve, reject) => {
+        if (profitAndLossContainerElement) {
+          profitAndLossContainerElement.style.textAlign = 'center';
+          profitAndLossContainerElement.innerHTML = `Please wait while we stub & crunch the numbers...`;
         }
 
-        this.statementGenerator();
-      }.bind(this);
+        const reader = new FileReader();
+        const readSuccess = function (e) {
+          this.csvResults = this.parseCSVContentAndReturnRows(e.target.result);
 
-      reader.onload = readSuccess;
+          if (this.createFile && this.createFile.type === 'csv') {
+            this.generateProfitLossStatementCSV();
+          }
+          if (this.createFile && this.createFile.type === 'pdf') {
+            this.generateProfitLossStatementPDF();
+          }
+
+          this.statementGenerator();
+        }.bind(this);
+
+        reader.onload = function (event) {
+          readSuccess(event);
+          resolve();
+        };
+
+        reader.onerror = function () {
+          console.log('Sorry, file processing failed');
+          this.errors.push('Sorry, file processing failed.');
+          return reject();
+        };
+
+        reader.readAsText(file);
+      });
     }.bind(this);
 
     const handleFileUpload = function (e) {
       const csvFile = e.target.files[0];
+
+      if (csvFile.size > this.MAX_FILE_SIZE) {
+        const profitAndLossContainerElement =
+          document.getElementById(this.profitAndLossContainer) ||
+          document.querySelector(`.${this.profitAndLossContainer}`);
+
+        profitAndLossContainerElement.innerHTML = `<p style="text-align: center;border-radius: 12px;padding: 12px; background-color: #e1413b">Sorry, we can only process ${this.bytesToMB(
+          this.MAX_FILE_SIZE
+        )} MB of file content.</p>`;
+        this.errors.push(e.message);
+        return false;
+      }
+
       this.fileTypeChecker(csvFile);
 
       readFile(e.srcElement.files[0]);
     }.bind(this);
+
     if (this.fileInputId) {
       const fileUploadElement = document.getElementById(this.fileInputId);
 
@@ -481,6 +520,7 @@ stubAfrica.prototype = {
 
       .stub-main-container {
         border: 1px solid #2b2b2f;
+        box-shadow: 0 12px 72px 0 rgba(0, 0, 0, 0.4);
         border-radius: 12px;
         margin: 25px;
         padding: 35px 15px;
@@ -702,5 +742,8 @@ stubAfrica.prototype = {
         block: 'start',
       });
     }
+  },
+  bytesToMB: function (bytes) {
+    return (bytes / (1024 * 1024)).toFixed(0);
   },
 };
