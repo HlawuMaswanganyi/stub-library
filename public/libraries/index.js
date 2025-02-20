@@ -5,6 +5,7 @@ const stubAfrica = function ({
   businessType,
   printOptions,
   sortDesc,
+  showLoadingText,
 }) {
   if (!fileInputElementId) {
     this.errors.push('Sorry, kindly provide a selector for your file upload input field: e.g #my-stub--file-upload');
@@ -15,6 +16,8 @@ const stubAfrica = function ({
     this.errors.push('Sorry, kindly provide a selector for your table element: e.g #my-stub--table');
     return false;
   }
+
+  this.showLoadingText = showLoadingText;
   this.sortDesc = sortDesc;
   this.printOptions = printOptions;
   this.businessType = businessType;
@@ -91,9 +94,11 @@ stubAfrica.prototype = {
     const readFile = async function (file) {
       const reader = new FileReader();
 
-      if (profitAndLossContainerElement) {
-        profitAndLossContainerElement.style.textAlign = 'center';
-        profitAndLossContainerElement.innerHTML = `Please wait while we stub & crunch the numbers...`;
+      if (this.showLoadingText && this.showLoadingText === true) {
+        if (profitAndLossContainerElement) {
+          profitAndLossContainerElement.style.textAlign = 'center';
+          profitAndLossContainerElement.innerHTML = `Please wait while we stub & crunch the numbers...`;
+        }
       }
 
       const readSuccess = function (e) {
@@ -174,11 +179,17 @@ stubAfrica.prototype = {
     const profitAndLossContainerElement =
       document.getElementById(this.profitAndLossContainer) || document.querySelector(`.${this.profitAndLossContainer}`);
 
-    const currentYearValue = new Date().getFullYear();
-    let statementDateLabel = `${currentYearValue - 1} / ${currentYearValue}`;
-
     try {
       const populateProfitLossContainer = function (rows) {
+        const tempYear = Number(rows[1][1]);
+
+        let currentYearValue = new Date().getFullYear();
+
+        if (tempYear) {
+          currentYearValue = tempYear > currentYearValue ? tempYear : currentYearValue;
+        }
+        let statementDateLabel = `${currentYearValue - 1} / ${currentYearValue}`;
+
         let specificYearData = {
           [currentYearValue - 1]: { expenses: [], income: [] },
           [currentYearValue]: { expenses: [], income: [] },

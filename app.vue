@@ -46,6 +46,7 @@ onUpdated(() => {
     },
     businessType: 'sbc',
     sortDesc: true,
+    showLoadingText: true,
   });
 
   stub.fileProcessor();
