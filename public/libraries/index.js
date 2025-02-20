@@ -87,59 +87,58 @@ stubAfrica.prototype = {
       document.getElementById(this.profitAndLossContainer) || document.querySelector(`.${this.profitAndLossContainer}`);
 
     const readFile = async function (file) {
-      return new Promise((resolve, reject) => {
-        if (profitAndLossContainerElement) {
-          profitAndLossContainerElement.style.textAlign = 'center';
-          profitAndLossContainerElement.innerHTML = `Please wait while we stub & crunch the numbers...`;
+      const reader = new FileReader();
+
+      if (profitAndLossContainerElement) {
+        profitAndLossContainerElement.style.textAlign = 'center';
+        profitAndLossContainerElement.innerHTML = `Please wait while we stub & crunch the numbers...`;
+      }
+
+      const readSuccess = function (e) {
+        this.csvResults = this.parseCSVContentAndReturnRows(e.target.result);
+
+        if (this.createFile && this.createFile.type === 'csv') {
+          this.generateProfitLossStatementCSV();
+        }
+        if (this.createFile && this.createFile.type === 'pdf') {
+          this.generateProfitLossStatementPDF();
         }
 
-        const reader = new FileReader();
-        const readSuccess = function (e) {
-          this.csvResults = this.parseCSVContentAndReturnRows(e.target.result);
+        this.statementGenerator();
+      }.bind(this);
 
-          if (this.createFile && this.createFile.type === 'csv') {
-            this.generateProfitLossStatementCSV();
-          }
-          if (this.createFile && this.createFile.type === 'pdf') {
-            this.generateProfitLossStatementPDF();
-          }
+      reader.onload = function (event) {
+        readSuccess(event);
+      };
 
-          this.statementGenerator();
-        }.bind(this);
+      reader.onerror = function () {
+        console.log('Sorry, file processing failed');
+        return this.errors.push('Sorry, file processing failed.');
+      };
 
-        reader.onload = function (event) {
-          readSuccess(event);
-          resolve();
-        };
-
-        reader.onerror = function () {
-          console.log('Sorry, file processing failed');
-          this.errors.push('Sorry, file processing failed.');
-          return reject();
-        };
-
-        reader.readAsText(file);
-      });
+      reader.readAsText(file);
     }.bind(this);
 
     const handleFileUpload = function (e) {
+      this.init();
       const csvFile = e.target.files[0];
+      if (csvFile) {
+        if (csvFile.size > this.MAX_FILE_SIZE) {
+          const profitAndLossContainerElement =
+            document.getElementById(this.profitAndLossContainer) ||
+            document.querySelector(`.${this.profitAndLossContainer}`);
 
-      if (csvFile.size > this.MAX_FILE_SIZE) {
-        const profitAndLossContainerElement =
-          document.getElementById(this.profitAndLossContainer) ||
-          document.querySelector(`.${this.profitAndLossContainer}`);
+          profitAndLossContainerElement.innerHTML = `<p style="text-align: center;border-radius: 12px;padding: 12px; background-color: #e1413b">Sorry, we can only process ${this.bytesToMB(
+            this.MAX_FILE_SIZE
+          )} MB of file content.</p>`;
+          this.errors.push(e.message);
+          return false;
+        }
 
-        profitAndLossContainerElement.innerHTML = `<p style="text-align: center;border-radius: 12px;padding: 12px; background-color: #e1413b">Sorry, we can only process ${this.bytesToMB(
-          this.MAX_FILE_SIZE
-        )} MB of file content.</p>`;
-        this.errors.push(e.message);
-        return false;
+        this.fileTypeChecker(csvFile);
+
+        readFile(e.srcElement.files[0]);
       }
-
-      this.fileTypeChecker(csvFile);
-
-      readFile(e.srcElement.files[0]);
     }.bind(this);
 
     if (this.fileInputId) {
