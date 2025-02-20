@@ -29,10 +29,10 @@
 
       <div class="profit-loss--container">
         <div class="pre-content--info remove-on-statement--load">
-          <p class="p-12 font-light text-center items-center">
-            <img class="dm" src="https://stub.africa/_nuxt/growth.dm.Cs2KInFV.svg" alt="Growth" />
-            Dear customer, your profit & loss statement will appear here after processing.
-          </p>
+          <div class="p-12 text-center items-center">
+            <img src="https://stub.africa/_nuxt/emptyjar.dm.Bv0eIRex.svg" alt="Empty" />
+            <p>Upload your file above, grab a nice coffee and wait a bit.</p>
+          </div>
         </div>
       </div>
     </div>
