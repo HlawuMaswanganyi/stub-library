@@ -59,7 +59,9 @@ stubAfrica.prototype = {
   },
   fileTypeChecker: function (file) {
     const isCSVFileType = file && file.type === 'text/csv';
+
     if (!isCSVFileType) {
+      console.log('Your file type is incorrect.');
       this.errors.push(`Sorry, we failed to process your file (${file.type}). Kindly ensure to upload a csv type file`);
       return false;
     }
@@ -135,9 +137,9 @@ stubAfrica.prototype = {
           return false;
         }
 
-        this.fileTypeChecker(csvFile);
-
-        readFile(e.srcElement.files[0]);
+        if (this.fileTypeChecker(csvFile)) {
+          readFile(e.srcElement.files[0]);
+        }
       }
     }.bind(this);
 
